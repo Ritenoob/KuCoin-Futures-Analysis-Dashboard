@@ -148,8 +148,7 @@ export class EMA extends StreamingIndicator {
  * Relative Strength Index (RSI) - streaming implementation
  */
 export class RSI extends StreamingIndicator {
-  private _avgGain: Decimal | undefined;
-  private _avgLoss: Decimal | undefined;
+  private _averages: { gain: Decimal; loss: Decimal } | undefined;
   private _previousClose: Decimal | undefined;
   private _warmupGains: Decimal[] = [];
   private _warmupLosses: Decimal[] = [];
@@ -169,7 +168,7 @@ export class RSI extends StreamingIndicator {
     this._previousClose = closeValue;
 
     // Warm-up period
-    if (this._avgGain === undefined) {
+    if (this._averages === undefined) {
       this._warmupGains.push(gain);
       this._warmupLosses.push(loss);
 
@@ -185,30 +184,32 @@ export class RSI extends StreamingIndicator {
         sumLoss = sumLoss.plus(this._warmupLosses[i] ?? new Decimal(0));
       }
 
-      this._avgGain = sumGain.dividedBy(this._period);
-      this._avgLoss = sumLoss.dividedBy(this._period);
+      this._averages = {
+        gain: sumGain.dividedBy(this._period),
+        loss: sumLoss.dividedBy(this._period)
+      };
       this._warmupGains = [];
       this._warmupLosses = [];
     } else {
       // Smoothed average: ((previous avg * (period - 1)) + current) / period
-      // Note: _avgLoss is guaranteed to be defined when _avgGain is defined
-      const avgLoss = this._avgLoss!;
-      this._avgGain = this._avgGain
-        .times(this._period - 1)
-        .plus(gain)
-        .dividedBy(this._period);
-      this._avgLoss = avgLoss
-        .times(this._period - 1)
-        .plus(loss)
-        .dividedBy(this._period);
+      this._averages = {
+        gain: this._averages.gain
+          .times(this._period - 1)
+          .plus(gain)
+          .dividedBy(this._period),
+        loss: this._averages.loss
+          .times(this._period - 1)
+          .plus(loss)
+          .dividedBy(this._period)
+      };
     }
 
     // Calculate RSI
     let rsi: Decimal;
-    if (this._avgLoss.isZero()) {
+    if (this._averages.loss.isZero()) {
       rsi = new Decimal(100);
     } else {
-      const rs = this._avgGain.dividedBy(this._avgLoss);
+      const rs = this._averages.gain.dividedBy(this._averages.loss);
       rsi = new Decimal(100).minus(new Decimal(100).dividedBy(rs.plus(1)));
     }
 
@@ -221,8 +222,7 @@ export class RSI extends StreamingIndicator {
   }
 
   override reset(): void {
-    this._avgGain = undefined;
-    this._avgLoss = undefined;
+    this._averages = undefined;
     this._previousClose = undefined;
     this._warmupGains = [];
     this._warmupLosses = [];
