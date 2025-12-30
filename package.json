@@ -1,0 +1,28 @@
+{
+  "name": "kucoin-futures-analysis-dashboard",
+  "version": "1.0.0",
+  "description": "kucoin analysis dashboard that gives signals, provides a scoring system and monitors the entire market on multi-time frames, sms telegram notification too",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "lint": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["trading", "cryptocurrency", "kucoin", "futures", "analysis"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "decimal.js": "^10.6.0",
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.0.3",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6"
+  }
+}
